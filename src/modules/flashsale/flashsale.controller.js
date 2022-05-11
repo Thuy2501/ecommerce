@@ -18,46 +18,55 @@ const flashsaleController = {
   },
   getFlashsaleByTime: async (req, res) => {
     try {
-
       // const flashsaleId = await flashsaleModel.findOne({
       //   include: {
       //     model: flashsaleItemModel,
       //     as: flashsaleItemModel.tableName,
-      //     where: {
-      //       quantity: {
-      //         [Op.gt]: 0
-      //       }
-      //     },
-      //     include: {
-      //       model: productModel,
-      //       as: productModel.tableName
-      //     }
-      //   },
-      //   where: {
-      //     start_time: {
-      //       [Op.lt]: new Date()
-      //     },
-      //     end_time: {
-      //       [Op.gt]: new Date()
-      //     }
+      // where: {
+      //   quantity: {
+      //     [Op.gt]: 0
       //   }
+      // },
+      //   include: {
+      //     model: productModel,
+      //     as: productModel.tableName
+      //   }
+      // },
+      // where: {
+      //   start_time: {
+      //     [Op.lt]: new Date()
+      //   },
+      //   end_time: {
+      //     [Op.gt]: new Date()
+      //   }
+      // }
       // })
 
-              const flashsaleId = await flashsaleItemModel.findAll({
-                include: {
-                  model: flashsaleModel,
-                  as: flashsaleModel.tableName,
-                  // where: {
-                  //   start_time: {
-                  //     [Op.lt]: new Date()
-                  //   },
-                  //   end_time: {
-                  //     [Op.gt]: new Date()
-                  //   }
-                  // }
-                },
-                where: { id_product: 2 }
-              })
+      const flashsaleId = await flashsaleModel.findAll({
+        attributes: ['name', 'description', 'start_time', 'end_time'],
+        include: {
+          model: flashsaleItemModel,
+          as: flashsaleItemModel.tableName,
+          attributes: ['discount', 'quantity'],
+          where: {
+            quantity: {
+              [Op.gt]: 0
+            }
+          },
+          include: {
+            model: productModel,
+            as: 'products',
+            attributes: [
+              'name',
+              'price',
+              'description',
+              'barcode',
+              'image',
+              'image_detail'
+            ]
+          }
+        }
+      })
       return res.status(200).json({
         flashsaleId
       })
@@ -89,6 +98,9 @@ const flashsaleController = {
     try {
       let { name, description, start_time, end_time } = req.body
 
+      const check_time_min = new Date(new Date(end_time) - new Date(start_time))
+      console.log('check_time_min')
+
       const check_time_flashsale = await flashsaleModel.findAll({
         where: {
           start_time: {
@@ -118,22 +130,6 @@ const flashsaleController = {
           msg: 'This time frame already exists flashsale'
         })
       }
-
-      // const check_time_flashsale = await flashsaleModel.findOne({
-      //   attributes: [
-      //     [sequelize.fn('max', sequelize.col('end_time')), 'maxTime']
-      //   ],
-      //   raw: true
-      // })
-
-      // const start = new Date(start_time)
-      // const end = new Date(check_time_flashsale.maxTime)
-
-      // if (start < end) {
-      //   return res.status(401).json({
-      //     msg: 'start_time must be greater than the previous end_time'
-      //   })
-      // }
 
       const flashsale = await flashsaleModel.create({
         name,

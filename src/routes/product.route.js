@@ -15,7 +15,6 @@ product
       { name: 'image', maxCount: 1 },
       { name: 'image_detail', maxCount: 5 }
     ]),
-    // upload.array('image', 12),
     productController.postProduct
   )
 

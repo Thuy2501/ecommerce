@@ -11,7 +11,7 @@ const flashsale_item = require('./flashsale_item.route')
 
 
 router.get('/', (req, res) => res.sendFile(__dirname + '/index.html'))
-// router.use('/uploads', express.static('uploads'))
+
 router.use('/users', user)
 router.use('/account', account)
 router.use('/products', product)

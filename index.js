@@ -13,11 +13,6 @@ const app = express()
 app.use(express.static('public'))
 app.use(express.json())
 app.use(cookieParser())
-// parse application/x-www-form-urlencoded
-// app.use(bodyParser.urlencoded({ extended: true }))
-// app.use(multer().array())
-// parse application/json
-// app.use(bodyParser.json())
 
 //registering cors
 app.use(cors());
@@ -29,12 +24,12 @@ if (process.env.MODE === "development") {
   app.use(morgan("dev")); // configire morgan
   app.use(express.static(__dirname));
 }
+const job = require('./src/setTime/cron-mail')
+job()
 
 app.use('/', routes)
 
-
 const PORT = process.env.PORT || 4000
-
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(docs))
 

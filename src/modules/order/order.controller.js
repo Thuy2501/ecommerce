@@ -7,7 +7,7 @@ const {
 } = require('../index')
 const { productModel } = require('../product/product.model')
 const { voucherModel } = require('../voucher/voucher.model')
-const { Op } = require('sequelize')
+const { Op, where } = require('sequelize')
 
 const orderController = {
   getOrderAll: async (req, res) => {
@@ -93,10 +93,21 @@ const orderController = {
       for (od of order_details) {
         //lấy giá của gốc của sp trong order detail
         const product = await productModel.findOne({
-          attributes: ['price'],
+          attributes: ['price', 'quantity'],
           where: { id: od.id_product },
           raw: true
         })
+
+        //check sp tồn tại?
+        if (!product) {
+          return res.status(401).json({ msg: 'This product does not exist' })
+        }
+
+        //update quantity product
+        const up_quantity_product = await productModel.update({
+          quantity: product.quantity - 1
+        },{where: {id:product.id}}
+        )
 
         //check sp trong flashsale?
         const check_flashsale = await flashsaleItemModel.findOne({

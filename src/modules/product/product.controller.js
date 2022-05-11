@@ -18,7 +18,13 @@ const productController = {
       } = req.query
 
       if (
-        typeof name=='undefined'&& typeof description=='undefined'&& typeof priceMin=='undefined' && typeof priceMax=='undefined' && typeof imPriceMin =='undefined' && typeof imPriceMax=='undefined' && typeof barcode =='undefined'
+        typeof name == 'undefined' &&
+        typeof description == 'undefined' &&
+        typeof priceMin == 'undefined' &&
+        typeof priceMax == 'undefined' &&
+        typeof imPriceMin == 'undefined' &&
+        typeof imPriceMax == 'undefined' &&
+        typeof barcode == 'undefined'
       ) {
         const products = await productModel.findAndCountAll({
           limit: Number(limit),
@@ -105,7 +111,7 @@ const productController = {
 
       const arrar_image_detail = image.image_detail.toString()
 
-//create product
+      //create product
       const product = await productModel.create({
         name,
         price,
@@ -127,10 +133,6 @@ const productController = {
 
   updateProduct: async (req, res) => {
     try {
-      const product_img = await productModel.findOne({
-        where: { id: req.params.id }
-      })
-      console.log('product_img', product_img)
       const { name, price, import_price, description, barcode, quantity } =
         req.body
 

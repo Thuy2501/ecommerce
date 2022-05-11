@@ -22,32 +22,6 @@ const orderDetailsController = {
     }
   },
 
-  postOrderDetails: async (req, res) => {
-    try {
-      const { price, quantity, id_product, id_order } = req.body
-      
-      const order_detail = await orderDetailsModels.create(
-        {
-          price,
-          quantity,
-          id_product,
-          id_order
-        },
-        {
-          include: [
-            {
-              model: productModel,
-              as: 'products'
-            }
-          ]
-        }
-      )
-
-    } catch (error) {
-      
-    }
-  },
-
   updateOrderDetails: async (req, res) => {
     try {
       const { qty } = req.body
