@@ -12,6 +12,13 @@ category
     categoryController.postCategory
 )
 
-category.route('/:id').get(categoryController.getProductOfCategoryById)
+
+category
+  .route('/:id')
+  .get(categoryController.getProductOfCategoryById)
+  .put(
+    upload.fields([{ name: 'banner', maxCount: 1 }]),
+    categoryController.updateCategory
+  )
   
 module.exports = category

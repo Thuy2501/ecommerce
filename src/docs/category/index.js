@@ -1,7 +1,7 @@
-const getCategorys = require('./get-categorys');
+const getCategorys = require('./get-categorys')
 const getProductCategorys = require('./get-product_category')
 const createCategory = require('./create-category')
-const updateProduct = require('./update-categorys')
+const updateCategory = require('./update-categorys')
 const deleteProduct = require('./delete-categorys')
 
 module.exports = {
@@ -9,9 +9,9 @@ module.exports = {
     ...getCategorys,
     ...createCategory
   },
-    '/categorys/{id}': {
-      ...getProductCategorys,
-  //     ...updateProduct,
-  //     ...deleteProduct
-    }
+  '/categorys/{id}': {
+    ...getProductCategorys,
+    ...updateCategory
+    //     ...deleteProduct
+  }
 }

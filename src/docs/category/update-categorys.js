@@ -1,8 +1,9 @@
 module.exports = {
   put: {
-    tags: ['Products'],
-    description: 'Update Products',
-    operationId: 'updateProduct',
+    tags: ['Categorys'],
+    description: 'Update Categorys',
+    operationId: 'updateCategorys',
+    summary: 'Uploads a file',
     parameters: [
       {
         name: 'id',
@@ -11,7 +12,7 @@ module.exports = {
           $ref: '#/components/schemas/id'
         },
         required: true,
-        description: 'Id of Product to be updated'
+        description: 'Id of Categorys to be updated'
       }
     ],
     security: [
@@ -27,44 +28,22 @@ module.exports = {
             properties: {
               name: {
                 type: 'string',
-                description: 'User email',
+                description: 'Name category',
                 example: 'apple'
               },
-              price: {
-                type: 'string',
+              status: {
+                type: 'boolean',
                 description: 'price',
                 example: '12'
               },
-              import_price: {
-                type: 'string',
-                description: 'import_price',
-                example: '20'
+              index: {
+                type: 'integer',
+                description: 'index',
+                example: '1'
               },
-              description: {
-                type: 'string',
-                description: 'description',
-                example: 'a apple'
-              },
-              barcode: {
-                type: 'string',
-                description: 'barcode',
-                example: '123456'
-              },
-              quantity: {
-                type: 'number',
-                description: 'quantity',
-                example: '10'
-              },
-              image: {
+              banner: {
                 type: 'string',
                 format: 'binary'
-              },
-              image_detail: {
-                type: 'array',
-                items: {
-                  type: 'string',
-                  format: 'binary'
-                }
               }
             }
           }
@@ -73,10 +52,10 @@ module.exports = {
     },
     responses: {
       200: {
-        description: 'Product updated successfully'
+        description: 'Categorys updated successfully'
       },
       404: {
-        description: 'Product not found'
+        description: 'Categorys not found'
       },
       500: {
         description: 'Server error'

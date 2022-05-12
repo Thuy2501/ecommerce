@@ -1,6 +1,8 @@
 const { productModel, orderDetailsModels, categoryModel } = require('../index')
 const { Op } = require('sequelize')
 const { saveImage } = require('../../helpers/saveImage')
+const { flashsaleItemModel } = require('../flashsaleItems/flashsaleItem.model')
+const { flashsaleModel } = require('../flashsale/flashsale.model')
 
 const productController = {
   getProduct: async (req, res) => {
@@ -27,6 +29,11 @@ const productController = {
         typeof barcode == 'undefined'
       ) {
         const products = await productModel.findAndCountAll({
+          include: {
+            model: categoryModel,
+            as: 'categorys',
+            where: { status: true }
+          },
           limit: Number(limit),
           offset: Number(page - 1) * Number(limit),
           order: [['created_at', 'DESC']],
@@ -36,6 +43,11 @@ const productController = {
       }
 
       const products = await productModel.findAndCountAll({
+        include: {
+          model: categoryModel,
+          as: 'categorys',
+          where: { status: true }
+        },
         where: {
           [Op.or]: [
             {
@@ -78,12 +90,49 @@ const productController = {
 
   getProductById: async (req, res) => {
     try {
+      const { limit, page } = req.query
+
       const product = await productModel.findOne({
-        where: { id: req.params.id }
+        include: {
+          model: categoryModel,
+          as: 'categorys'
+          // where: { status: true }
+        },
+        include: {
+          model: flashsaleItemModel,
+          as: 'flashsaleItems'
+        },
+        where: { id: req.params.id },
+        limit: Number(limit),
+        offset: Number(page - 1) * Number(limit),
+        order: [['created_at', 'DESC']]
+        // raw: true
       })
-      res.send(product)
+
+      const check_flashsale = await flashsaleItemModel.findOne({
+        include: {
+          model: flashsaleModel,
+          as: 'flashsales',
+          where: {
+              start_time: {
+                [Op.lt]: new Date()
+              },
+              end_time: {
+                [Op.gt]: new Date()
+              }
+          }
+        },
+        where: { id_product: req.params.id }
+      })
+      console.log('check_flashsale', check_flashsale)
+
+      if (!product) {
+        return res.status(500).json({ msg: 'product does not exist' })
+      }
+      return res.send(check_flashsale)
     } catch (error) {
-      res.status(500).json({ error: 'error' })
+      console.log(error)
+      return res.status(500).json({ error: 'error' })
     }
   },
 
@@ -100,12 +149,13 @@ const productController = {
       } = req.body
       //check id of category
       const check_idCategory = await categoryModel.findOne({
-        where: { id: id_category }
+        where: { id: id_category, status: true }
       })
 
       if (!check_idCategory) {
         return res.status(401).json({ msg: 'This categody does not exist' })
       }
+
       //save img
       const image = await saveImage(req)
 

@@ -5,6 +5,29 @@ module.exports = {
     operationId: 'getProduct',
     parameters: [
       {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          default: 0
+        },
+        required: false,
+        description: 'The numbers of items to return'
+      },
+      {
+        in: 'query',
+        name: 'page',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          default: 0
+        },
+        required: false,
+        description:
+          'The number of items to skip before starting to collect the result set.'
+      },
+      {
         name: 'id',
         in: 'path',
         schema: {

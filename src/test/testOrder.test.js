@@ -1,6 +1,5 @@
 const supertest = require('supertest')
 const { app, server } = require('../../index')
-
 let token = ''
 
 beforeAll(async () => {
@@ -12,32 +11,55 @@ beforeAll(async () => {
   token = response.body.access_token
 })
 
-describe('Products API', () => {
-  test('Get /products/ --> array products', async () => {
+describe('orders API', () => {
+  test('Get /orders/all --> array orders', async () => {
     return supertest(app)
-      .get('/products')
+      .get('/orders/all')
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
         expect(response.statusCode).toBe(200)
       })
   })
 
-  test('Get /products/:id --> array user', async () => {
+  test('Get /orders/ --> array orders', async () => {
     return supertest(app)
-      .get(`/products/2`)
+      .get('/orders')
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
         expect(response.statusCode).toBe(200)
       })
   })
 
-  test('Post /products/ --> Post user', async () => {
+  test('Get /orders/:id --> array order', async () => {
+    return supertest(app)
+      .get(`/orders/2`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .then((response) => {
+        expect(response.statusCode).toBe(200)
+      })
+  })
+
+  test('Post /orders/ --> Post order', async () => {
     const data = {
-      name: 'apple4',
-      price: '12'
+      name: 'Nhien An1',
+      phone: '0123456890',
+      address: 'Hà Nội',
+      order_details: [
+        {
+          product_id: '1',
+          qty: '2'
+        },
+        {
+          product_id: '2',
+          qty: '1'
+        }
+      ]
     }
     return supertest(app)
-      .post('/products')
+      .post('/orders')
       .set('Authorization', `Bearer ${token}`)
       .send(data)
       .expect(200)
@@ -46,13 +68,14 @@ describe('Products API', () => {
       })
   })
 
-  test('Put /products/:id --> array products', async () => {
+  test('Put /orders/:id --> array orders', async () => {
     const data = {
-      name: 'oto',
-      price: '12'
+      name: 'Nhien_up2',
+      phone: '0123456890',
+      address: 'Hà Nội'
     }
     return supertest(app)
-      .put(`/products/8`)
+      .put(`/orders/6`)
       .set('Authorization', `Bearer ${token}`)
       .send(data)
       .expect(200)
@@ -61,9 +84,9 @@ describe('Products API', () => {
       })
   })
 
-  test('Delete /products/ --> delete user', async () => {
+  test('Delete /orders/ --> delete order', async () => {
     return supertest(app)
-      .delete(`/products/12`)
+      .delete(`/orders/58`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
@@ -71,7 +94,6 @@ describe('Products API', () => {
         expect(response.statusCode).toBe(200)
       })
   })
-  
 })
 
 afterAll(async () => {

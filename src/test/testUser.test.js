@@ -1,6 +1,6 @@
 const supertest = require('supertest')
-const { app, server } = require('../../index')
-
+const {app,server} = require('../../index')
+const { userModel } = require('../modules/index')
 let token = ''
 
 beforeAll(async () => {
@@ -12,32 +12,51 @@ beforeAll(async () => {
   token = response.body.access_token
 })
 
-describe('Products API', () => {
-  test('Get /products/ --> array products', async () => {
+describe('User API', () => {
+  test('Get /users/ --> array user', async () => {
     return supertest(app)
-      .get('/products')
+      .get('/users')
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
         expect(response.statusCode).toBe(200)
       })
   })
 
-  test('Get /products/:id --> array user', async () => {
+  test('Get /users/:id --> array user', async () => {
     return supertest(app)
-      .get(`/products/2`)
+      .get(`/users/2`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
         expect(response.statusCode).toBe(200)
       })
   })
 
-  test('Post /products/ --> Post user', async () => {
+  test('Post /users/ --> array user', async () => {
     const data = {
-      name: 'apple4',
-      price: '12'
+      username: 'test',
+      password: '123456',
+      email: 'test14@gmail.com',
+      role: 'user'
     }
     return supertest(app)
-      .post('/products')
+      .post('/users/')
+      .set('Authorization', `Bearer ${token}`)
+      .send(data)
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual({ msg: 'success' })
+        expect(response.statusCode).toBe(200)
+      })
+  })
+
+  test('Put /users/:id --> array user', async () => {
+    const data = {
+      username: 'Nhien_up1'
+    }
+    return supertest(app)
+      .put(`/users/4`)
       .set('Authorization', `Bearer ${token}`)
       .send(data)
       .expect(200)
@@ -46,32 +65,16 @@ describe('Products API', () => {
       })
   })
 
-  test('Put /products/:id --> array products', async () => {
-    const data = {
-      name: 'oto',
-      price: '12'
-    }
+  test('Delete /users/ --> array user', async () => {
     return supertest(app)
-      .put(`/products/8`)
-      .set('Authorization', `Bearer ${token}`)
-      .send(data)
-      .expect(200)
-      .then((response) => {
-        expect(response.statusCode).toBe(200)
-      })
-  })
-
-  test('Delete /products/ --> delete user', async () => {
-    return supertest(app)
-      .delete(`/products/12`)
+      .delete(`/users/12`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
-        expect(response.body).toEqual({ msg: 'delete success' })
+        expect(response.body).toEqual({ msg: 'Delete a user' })
         expect(response.statusCode).toBe(200)
       })
   })
-  
 })
 
 afterAll(async () => {

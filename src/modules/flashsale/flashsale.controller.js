@@ -1,6 +1,5 @@
 const { flashsaleModel, productModel, flashsaleItemModel } = require('../index')
-const sequelize = require('sequelize')
-const { Op } = require('sequelize')
+const { Op, Sequelize } = require('sequelize')
 
 const flashsaleController = {
   getFlashsales: async (req, res) => {
@@ -41,31 +40,42 @@ const flashsaleController = {
       //   }
       // }
       // })
-
       const flashsaleId = await flashsaleModel.findAll({
         attributes: ['name', 'description', 'start_time', 'end_time'],
-        include: {
-          model: flashsaleItemModel,
-          as: flashsaleItemModel.tableName,
-          attributes: ['discount', 'quantity'],
-          where: {
-            quantity: {
-              [Op.gt]: 0
-            }
-          },
-          include: {
-            model: productModel,
-            as: 'products',
+
+        include: [
+          {
+            model: flashsaleItemModel,
+            as: flashsaleItemModel.tableName,
             attributes: [
-              'name',
-              'price',
-              'description',
-              'barcode',
-              'image',
-              'image_detail'
-            ]
+              'discount',
+              'quantity',
+              [
+                Sequelize.literal(
+                  '"flashsaleItems->products"."price" - (("flashsaleItems->products"."price" * "flashsaleItems"."discount")/ 100) '
+                ),
+                'sell_price'
+              ]
+            ],
+            where: {
+              quantity: {
+                [Op.gt]: 0
+              }
+            },
+            include: {
+              model: productModel,
+              as: 'products',
+              attributes: [
+                'name',
+                'price',
+                'description',
+                'barcode',
+                'image',
+                'image_detail'
+              ]
+            }
           }
-        }
+        ]
       })
       return res.status(200).json({
         flashsaleId
@@ -98,8 +108,14 @@ const flashsaleController = {
     try {
       let { name, description, start_time, end_time } = req.body
 
-      const check_time_min = new Date(new Date(end_time) - new Date(start_time))
-      console.log('check_time_min')
+      // const check_time = new Date(new Date(start_time) + 30 * 60 * 60 * 1000)
+      // const end_times = new Date(end_time)
+
+      // if (end_times > check_time) {
+      //   return res.status(401).json({
+      //     msg: 'thời gian cần phải lớn hơn'
+      //   })
+      // }
 
       const check_time_flashsale = await flashsaleModel.findAll({
         where: {

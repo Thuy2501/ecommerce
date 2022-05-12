@@ -50,7 +50,7 @@ const categoryController = {
 
   postCategory: async (req, res) => {
     try {
-      const { name, status, banner, index } = req.body
+      const { name, status, index } = req.body
 
       const check_name = await categoryModel.findOne({ where: { name } })
 
@@ -74,12 +74,18 @@ const categoryController = {
 
   updateCategory: async (req, res) => {
     try {
-      const category = await categoryModel.update(req.body, {
-        where: { id: req.params.id }
-      })
+      const { name, status, index } = req.body
+      const image = await saveImage(req)
+      const category = await categoryModel.update(
+        { name, status, index, banner: image.banner },
+        {
+          where: { id: req.params.id }
+        }
+      )
       if (category)
         res.status(200).json({ msg: 'update a category', category: category })
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error: 'error' })
     }
   },

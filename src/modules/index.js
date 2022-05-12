@@ -64,7 +64,7 @@ categoryModel.hasMany(productModel, {
 
 // product-flashsaleItem
 productModel.hasMany(flashsaleItemModel, {
-  foreignKey: 'id',
+  foreignKey: 'id_product',
   as: flashsaleItemModel.tableName
 })
 

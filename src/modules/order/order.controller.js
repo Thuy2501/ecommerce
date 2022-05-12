@@ -1,7 +1,7 @@
 const {
   orderModel,
   orderDetailsModels,
-  userModel,
+  categoryModel,
   flashsaleItemModel,
   flashsaleModel
 } = require('../index')
@@ -93,6 +93,11 @@ const orderController = {
       for (od of order_details) {
         //lấy giá của gốc của sp trong order detail
         const product = await productModel.findOne({
+          include: {
+            model: categoryModel,
+            as: 'categorys',
+            where: { status: true }
+          },
           attributes: ['price', 'quantity'],
           where: { id: od.id_product },
           raw: true

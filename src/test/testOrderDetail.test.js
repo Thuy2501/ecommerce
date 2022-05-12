@@ -1,6 +1,5 @@
 const supertest = require('supertest')
 const { app, server } = require('../../index')
-
 let token = ''
 
 beforeAll(async () => {
@@ -12,58 +11,45 @@ beforeAll(async () => {
   token = response.body.access_token
 })
 
-describe('Products API', () => {
-  test('Get /products/ --> array products', async () => {
+describe('order details API', () => {
+  test('Get /order-details/ --> array order-details', async () => {
     return supertest(app)
-      .get('/products')
+      .get('/order-details')
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
         expect(response.statusCode).toBe(200)
       })
   })
 
-  test('Get /products/:id --> array user', async () => {
+  test('Get /order-details/:id --> array user', async () => {
     return supertest(app)
-      .get(`/products/2`)
+      .get(`/order-details/2`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
         expect(response.statusCode).toBe(200)
       })
   })
 
-  test('Post /products/ --> Post user', async () => {
+  test('Put /order-details/:id --> array order-details', async () => {
     const data = {
-      name: 'apple4',
-      price: '12'
+      qty: '20',
     }
     return supertest(app)
-      .post('/products')
+      .put(`/order-details/8`)
       .set('Authorization', `Bearer ${token}`)
       .send(data)
       .expect(200)
-      .then((response) => {
+        .then((response) => {
+          expect(response.body).toEqual({ msg: 'update a order details' })
         expect(response.statusCode).toBe(200)
       })
   })
 
-  test('Put /products/:id --> array products', async () => {
-    const data = {
-      name: 'oto',
-      price: '12'
-    }
+  test('Delete /order-details/ --> delete user', async () => {
     return supertest(app)
-      .put(`/products/8`)
-      .set('Authorization', `Bearer ${token}`)
-      .send(data)
-      .expect(200)
-      .then((response) => {
-        expect(response.statusCode).toBe(200)
-      })
-  })
-
-  test('Delete /products/ --> delete user', async () => {
-    return supertest(app)
-      .delete(`/products/12`)
+      .delete(`/order-details/120`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .then((response) => {
@@ -71,7 +57,6 @@ describe('Products API', () => {
         expect(response.statusCode).toBe(200)
       })
   })
-  
 })
 
 afterAll(async () => {
