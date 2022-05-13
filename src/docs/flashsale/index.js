@@ -2,20 +2,18 @@
 // const getOrder = require('./get-order')
 const getFlashsaleTime = require('./get-flashsaleTime')
 const createFlashsale = require('./create-flashsale')
-// const updateOrder = require('./update-order')
+const updateFlashsale = require('./update_flashsale')
 // const deleteOrder = require('./delete-order')
 
 module.exports = {
   '/flashsale': {
     ...getFlashsaleTime,
     ...createFlashsale
-  }
+  },
   // '/orders/all': {
   //   ...getOrderAll
   // },
-  // '/orders/{id}': {
-  //   ...getOrder,
-  //   ...updateOrder,
-  //   ...deleteOrder
-  // }
+  '/flashsale/{id}': {
+    ...updateFlashsale
+  }
 }

@@ -161,6 +161,50 @@ const flashsaleController = {
       console.log(error)
       return res.status(500).json({ error: error })
     }
+  },
+
+  updateflashsale: async (req, res) => {
+    try {
+      let { name, description, start_time, end_time } = req.body
+      const check_time_flashsale = await flashsaleModel.findAll({
+        where: {
+          start_time: {
+            [Op.or]: [
+              {
+                [Op.lt]: start_time,
+                [Op.lt]: end_time
+              },
+              { [Op.between]: [start_time, end_time] }
+            ]
+          },
+          end_time: {
+            [Op.or]: [
+              {
+                [Op.gt]: start_time,
+                [Op.gt]: end_time
+              },
+              { [Op.between]: [start_time, end_time] }
+            ]
+          }
+        },
+        raw: true
+      })
+
+      if (check_time_flashsale.length) {
+        return res.status(401).json({
+          msg: 'This time frame already exists flashsale'
+        })
+      }
+      
+      const flashsale = await flashsaleModel.update(req.body, {
+        where: { id: req.params.id }
+      })
+      if (flashsale)
+        return res.status(200).json({ msg: 'update a flashsale', flashsale: flashsale })
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({ error: error })
+    }
   }
 }
 

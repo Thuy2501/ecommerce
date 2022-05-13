@@ -34,7 +34,12 @@ const productModel = sequelizeConnect.define(
       type: DataTypes.STRING
     },
     id_category: {
-      type:DataTypes.INTEGER
+      type: DataTypes.INTEGER
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'false',
+      value: 'false' || 'true'||'wait'
     }
   },
   {

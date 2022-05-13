@@ -7,4 +7,9 @@ flashsale
   .post(flashsaleController.postFlashsale)
   .get(flashsaleController.getFlashsaleByTime)
 
+
+  flashsale
+    .route('/:id')
+    .put(flashsaleController.updateflashsale)
+    
 module.exports = flashsale

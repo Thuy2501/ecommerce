@@ -20,6 +20,11 @@ const flashsaleItemModel = sequelizeConnect.define(
     },
     id_flashsale: {
       type: DataTypes.INTEGER
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'false',
+      value: 'true' || 'false'||'wait'
     }
   },
   {

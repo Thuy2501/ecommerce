@@ -9,6 +9,7 @@ const categoryController = {
 
       if (!name) {
         const category = await categoryModel.findAndCountAll({
+          where:{status:true},
           limit: Number(limit),
           offset: Number(page - 1) * Number(limit),
           order: [['index', 'DESC']],
@@ -20,7 +21,8 @@ const categoryController = {
         where: {
           name: {
             [Op.substring]: `${name}`
-          }
+          },
+          status:true
         },
         limit: Number(limit),
         offset: Number(page - 1) * Number(limit),
@@ -40,7 +42,7 @@ const categoryController = {
           model: productModel,
           as: 'products'
         },
-        where: { id: req.params.id }
+        where: { id: req.params.id ,status:true}
       })
       return res.send(category)
     } catch (error) {
