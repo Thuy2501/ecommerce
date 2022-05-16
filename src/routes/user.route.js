@@ -6,18 +6,23 @@ const ROLE = require('../contains/role')
 
 user
   .route('/')
-  .get(auth, authRole([ROLE.ADMIN]), userController.getUser)
+  .get(auth, authRole([ROLE.ADMIN]), userController.getUsers)
   .post(
     auth,
     validation('validation_createUser'),
     authRole([ROLE.ADMIN]),
     userController.postUser
   )
-
-user
-  .route('/:id')
-  .get(auth, userController.getUserById)
-  .put(auth, validation('validation_updateUser'), userController.updateUser)
-  .delete(auth, authRole([ROLE.ADMIN]), userController.deleteUser)
+ 
+   user
+     .route('/:id')
+     .get(auth, authRole([ROLE.ADMIN]), userController.getUserById)
+     .put(
+       auth,
+       validation('validation_updateAdmin'),
+       authRole([ROLE.ADMIN]),
+       userController.updateAdmin
+     )
+     .delete(auth, authRole([ROLE.ADMIN]), userController.deleteUser)
 
 module.exports = user

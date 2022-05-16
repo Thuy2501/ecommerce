@@ -24,7 +24,7 @@ const flashsaleItemModel = sequelizeConnect.define(
     status: {
       type: DataTypes.STRING,
       defaultValue: 'false',
-      value: 'true' || 'false'||'wait'
+      value: 'true' || 'false' || 'pending'
     }
   },
   {

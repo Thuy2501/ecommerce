@@ -1,11 +1,13 @@
-const updateFlashsaleItem = require('./update_flashsaleItem')
-const createFlashsaleItem = require('./create_flashsaleItem')
+const updateFlashsaleItem = require('./update-flashsaleItem')
+const createFlashsaleItem = require('./create-flashsaleItem')
+const deleteFlashsaleItem = require('./delete-flashsaleItem')
 
 module.exports = {
   '/flashsale_item': {
     ...createFlashsaleItem
   },
-  '/flashsale_item/:id': {
-    ...updateFlashsaleItem
+  '/flashsale_item/{id}': {
+    ...updateFlashsaleItem,
+    ...deleteFlashsaleItem
   }
 }

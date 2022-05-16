@@ -17,6 +17,7 @@ const categoryController = {
         })
         return res.send(category)
       }
+      
       const category = await categoryModel.findAndCountAll({
         where: {
           name: {

@@ -20,6 +20,9 @@ const userModel = sequelizeConnect.define(
       type: DataTypes.STRING,
       allowNull: false
     },
+    uid: {
+      type: DataTypes.STRING
+    },
     verify: {
       type: DataTypes.BOOLEAN,
       defaultValue: 'false'
@@ -28,6 +31,10 @@ const userModel = sequelizeConnect.define(
       type: DataTypes.STRING,
       defaultValue: 'user',
       value: 'user' || 'admin'
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue:true
     }
   },
   {

@@ -3,81 +3,95 @@ const {
   orderDetailsModels,
   categoryModel,
   flashsaleItemModel,
-  flashsaleModel
+  flashsaleModel,
+  userModel
 } = require('../index')
 const { productModel } = require('../product/product.model')
 const { voucherModel } = require('../voucher/voucher.model')
-const { Op, where } = require('sequelize')
+const { Op } = require('sequelize')
 
 const orderController = {
   getOrderAll: async (req, res) => {
     try {
       const orders = await orderModel.findAll({ raw: true })
 
-      res.send(orders)
+      return res.send(orders)
     } catch (error) {
-      res.status(500).json({ error: 'error' })
+      return res.status(500).json({ error: 'error' })
     }
   },
   getOrderByIdUser: async (req, res) => {
     try {
       const { limit, page } = req.query
-      // const orders = await userModel.findOne({
-      //   include: {
-      //     model: orderModel,
-      //     as: 'orders',
-      //     include: {
-      //       model: orderDetailsModels,
-      //       as: 'order_details',
-      //       include: {
-      //         model: productModel,
-      //         as: 'products'
-      //       }
-      //     }
-      //   },
-      //   where: { id: req.user.id },
-      //   limit: Number(limit),
-      //   offset: Number(page - 1) * Number(limit),
-      //   order: [['created_at', 'DESC']],
-      //   raw: true
-      // })
 
-      const user_order = await orderModel.findOne({
+      const orders = await userModel.findAll({
+        attributes: ['username', 'email'],
         include: {
-          model: orderDetailsModels,
-          as: 'order_details',
+          model: orderModel,
+          as: 'orders',
+          attributes: ['name', 'total_money', 'phone', 'address', 'voucher_id'],
           include: {
-            model: productModel,
-            as: 'products'
+            model: orderDetailsModels,
+            as: 'order_details',
+            attributes: ['price', 'qty'],
+            include: {
+              model: productModel,
+              as: 'products',
+              attributes: [
+                'name',
+                'price',
+                'description',
+                'barcode',
+                'quantity',
+                'image',
+                'image_detail'
+              ]
+            }
           }
         },
-        where: { id_user: req.user.id }
+        where: { id: req.user.id },
+        limit: Number(limit),
+        offset: Number(page - 1) * Number(limit),
+        order: [['id', 'DESC']]
+        // raw: true
       })
-      delete user_order.dataValues['password']
-      res.send(user_order)
+
+      return res.send(orders)
     } catch (error) {
       console.log(error)
-      res.status(500).json({ error: 'error' })
+      return res.status(500).json({ error: 'error' })
     }
   },
   getOrderByIdOrder: async (req, res) => {
     try {
       const order = await orderModel.findOne({
+        attributes: ['name', 'total_money', 'phone', 'address', 'voucher_id'],
         include: {
           model: orderDetailsModels,
           as: 'order_details',
+          attributes: ['price', 'qty'],
           include: {
             model: productModel,
-            as: 'products'
+            as: 'products',
+            attributes: [
+              'name',
+              'price',
+              'description',
+              'barcode',
+              'quantity',
+              'image',
+              'image_detail'
+            ]
           }
         },
         where: { id: req.params.id }
       })
-      res.status(200).json({
+
+      return  res.status(200).json({
         order
       })
     } catch (error) {
-      res.status(500).json({ error: 'error' })
+      return res.status(500).json({ error: 'error' })
     }
   },
 
@@ -109,10 +123,10 @@ const orderController = {
         }
 
         //update quantity product
-        const up_quantity_product = await productModel.update({
-          quantity: product.quantity - 1
-        },{where: {id:product.id}}
-        )
+        // const up_quantity_product = await productModel.update({
+        //   quantity: product.quantity - 1
+        // },{where: {id:product.id}}
+        // )
 
         //check sp trong flashsale?
         const check_flashsale = await flashsaleItemModel.findOne({
@@ -225,7 +239,7 @@ const orderController = {
       })
     } catch (error) {
       console.log(error)
-      res.status(500).json({ error: error })
+      return res.status(500).json({ error: error })
     }
   },
 

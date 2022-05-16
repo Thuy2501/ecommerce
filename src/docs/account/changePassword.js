@@ -1,5 +1,5 @@
 module.exports = {
-  post: {
+  put: {
     tags: ['Account'],
     description: 'Change password user',
     operationId: 'changePassword',
@@ -20,9 +20,9 @@ module.exports = {
                 description: 'User old_password',
                 example: '123456'
               },
-              change_password: {
+              new_password: {
                 type: 'string',
-                description: 'User change_password',
+                description: 'User new_password',
                 example: '1234567'
               }
             }

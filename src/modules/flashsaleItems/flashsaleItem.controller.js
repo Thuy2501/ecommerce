@@ -84,6 +84,19 @@ const flashsaleItemsController = {
       console.log(error)
       res.status(500).json({ error: error })
     }
+  },
+
+  deleteflashsaleItems: async (req, res) => {
+    try {
+      console.log('req.params.id', req.params.id)
+      await flashsaleItemModel.destroy({
+        where: { id: req.params.id }
+      })
+      return res.status(200).json({ mes: 'delete success' })
+    } catch (error) {
+      console.log('error',error)
+      return res.status(500).json({ error: 'error' })
+    }
   }
 }
 

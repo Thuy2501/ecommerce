@@ -6,11 +6,11 @@ module.exports = {
     parameters: [
       {
         in: 'query',
-        name: 'offset',
+        name: 'page',
         schema: {
           type: 'integer',
-          minimum: 0,
-          default: 0
+          minimum: 1,
+          default: 1
         },
         required: false,
         description:
@@ -22,12 +22,22 @@ module.exports = {
         schema: {
           type: 'integer',
           minimum: 0,
-          default: 0
+          default: 3
         },
         required: false,
         description: 'The numbers of items to return'
+      },
+      {
+        in: 'query',
+        name: 'username',
+        schema: {
+          type: 'string',
+          default: 'admin'
+        },
+        required: false,
+        description: 'The user name'
       }
-    ],
+    ],  
     security: [
       {
         bearerAuth: []

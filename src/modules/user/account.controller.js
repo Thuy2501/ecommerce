@@ -1,6 +1,7 @@
 const { userModel } = require('../index')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { uid } = require('uid')
 const { randPass } = require('../../validation/randPass')
 const sendEmail = require('../../utils/mailer')
 
@@ -12,29 +13,31 @@ const accountController = {
       const user_email = await userModel.findOne({ where: { email } })
 
       if (user_email)
-        return res.status(400).json({ msg: 'email already exists' })
+        return res.status(400).json({ message: 'Email already exists' })
 
       const passwordHash = await bcrypt.hash(password, 12)
 
       const newUser = {
         email,
-        password: passwordHash
+        password: passwordHash,
+        uid: uid(25)
       }
 
       await userModel.create(newUser)
-      const user = await userModel.findOne({ where: { email } })
+      // const user = await userModel.findOne({ where: { email } })
 
-      const activation_token = createActivationToken({ id: user.id })
+      // const activation_token = createActivationToken({ id: user.id })
 
-      const message = `${process.env.APP_URL}/account/verify/${activation_token}`
-     
-      await sendEmail(newUser.email, 'Verify Email', message)
+      const messageEmail = `${process.env.APP_URL}/account/verify/${newUser.uid}`
+
+      await sendEmail(newUser.email, 'Verify Email', messageEmail)
 
       res.status(200).json({
-        msg: 'Vui lòng check email!'
+        message: 'Vui lòng check email!'
       })
-    } catch (err) {
-      return res.status(500).json({ err: err.message })
+    } catch (error) {
+      console.log('errr', error)
+      return res.status(500).json({ error: error })
     }
   },
 
@@ -42,28 +45,35 @@ const accountController = {
     try {
       const token = req.params.token
 
-      jwt.verify(
-        token,
-        process.env.ACTIVATION_TOKEN_SECRET,
-        async (err, user) => {
-          if (err) {
-            return res.status(401).json({ msg: 'Xác thực không hợp lệ.' })
-          }
+      // jwt.verify(
+      //   token,
+      //   process.env.ACTIVATION_TOKEN_SECRET,
+      //   async (err, user) => {
+      //     if (err) {
+      //       return res.status(401).json({ message: 'Xác thực không hợp lệ.' })
+      //     }
 
-          await userModel.update(
-            { verify: true },
-            {
-              where: { id: user.id }
-            }
-          )
+      //     await userModel.update(
+      //       { verify: true },
+      //       {
+      //         where: { id: user.id, uid: token }
+      //       }
+      //     )
+      //   }
+      // )
+
+      await userModel.update(
+        { verify: true },
+        {
+          where: { id: user.id, uid: token }
         }
       )
 
-      res.status(200).json({
-        msg: 'verify Success!'
+      return res.status(200).json({
+        message: 'verify Success!'
       })
-    } catch (err) {
-      return res.status(500).json({ err: err })
+    } catch (error) {
+      return res.status(500).json({ error: error })
     }
   },
 
@@ -73,44 +83,43 @@ const accountController = {
 
       const user = await userModel.findOne({ where: { email }, raw: true })
 
-      if (!user) return res.status(400).json({ msg: 'Email does not exist!' })
+      if (!user)
+        return res.status(400).json({ message: 'Email does not exist!' })
 
       if (!user.verify) {
-        return res.status(400).json({ msg: 'unverified email!' })
+        return res.status(400).json({ message: 'unverified email!' })
+      }
+
+      if (user.status == false) {
+        return res.status(400).json({ message: 'Account has been disabled' })
       }
 
       const isMatch = await bcrypt.compare(password, user.password)
-      if (!isMatch) return res.status(400).json({ msg: 'Sai mật khẩu!' })
+      if (!isMatch) return res.status(400).json({ message: 'Sai mật khẩu!' })
 
       const access_token = createAccessToken({ id: user.id })
 
       const refresh_token = createRefreshToken({ id: user.id })
 
-      // res.cookie('refreshtoken', refresh_token, {
-      //   httpOnly: true,
-      //   path: '/account/refresh_token',
-      //   maxAge: 30 * 24 * 60 * 60 * 1000 // 30days
-      // })
-      // delete user['password']
-      res.status(200).json({
-        msg: 'Login Success!',
+      return res.status(200).json({
+        message: 'Login Success!',
         access_token,
         refresh_token
       })
     } catch (err) {
-      return res.status(500).json({ msg: err.message })
+      return res.status(500).json({ error: error })
     }
   },
 
   changePassword: async (req, res) => {
     try {
-      let { old_password, change_password } = req.body
+      let { old_password, new_password } = req.body
 
       const isMatch = await bcrypt.compare(old_password, req.user.password)
 
-      if (!isMatch) return res.status(400).json({ msg: 'Sai mật khẩu!' })
+      if (!isMatch) return res.status(400).json({ message: 'Sai mật khẩu!' })
 
-      const passwordHash = await bcrypt.hash(change_password, 12)
+      const passwordHash = await bcrypt.hash(new_password, 12)
 
       await userModel.update(
         { password: passwordHash },
@@ -119,9 +128,9 @@ const accountController = {
         }
       )
 
-      res.status(200).json({ message: 'success' })
+      return res.status(200).json({ message: 'success' })
     } catch (error) {
-      return res.status(500).json({ msg: err.message })
+      return res.status(500).json({ error: error })
     }
   },
 
@@ -131,7 +140,7 @@ const accountController = {
 
       const isMail = await userModel.findOne({ where: { email }, raw: true })
       if (!isMail)
-        return res.status(400).json({ msg: 'Email này không tồn tại' })
+        return res.status(400).json({ message: 'Email does not exist!' })
 
       const re_password = randPass(5, 3)
       const passwordHash = await bcrypt.hash(re_password, 12)
@@ -141,35 +150,44 @@ const accountController = {
         { where: { email }, raw: true }
       )
 
-      res.status(200).json({
-        msg: 'reset password success',
+      return res.status(200).json({
+        message: 'reset password success',
         re_password
       })
     } catch (error) {
-      return res.status(500).json({ msg: err.message })
+      return res.status(500).json({ error: error })
     }
   },
 
-  updateAdmin: async (req, res) => {
+  updateAccount: async (req, res) => {
     try {
-      const { email, role } = req.body
+      const { username } = req.body
 
-      const checkEmail = await userModel.findOne({
-        where: { email: email },
-        raw: true
-      })
-
-      if (!checkEmail)
-        return res.status(400).json({ msg: 'email không tồn tại' })
-
-      const up_admin = await userModel.update(
-        { role },
-        { where: { email: email } }
+      const user = await userModel.update(
+        { username },
+        {
+          where: { id: req.user.id }
+        }
       )
 
-      if (up_admin) res.status(200).json({ msg: 'success' })
+      if (user)
+        return res
+          .status(200)
+          .json({ msg: 'update account success', up_user: user })
     } catch (error) {
-      res.status(500).json({ msg: 'error update_admin' })
+      return res.status(500).json({ error: error })
+    }
+  },
+
+  getAccount: async (req, res) => {
+    try {
+      const user = await userModel.findOne({
+        attributes: ['username', 'email'],
+        where: { id: req.user.id }
+      })
+      return res.status(200).send(user)
+    } catch (error) {
+      return res.status(500).json({ error: error })
     }
   },
 
@@ -180,28 +198,28 @@ const accountController = {
         rf_token,
         process.env.REFRESH_TOKEN_SECRET,
         async (err, result) => {
-          if (err) return res.status(400).json({ msg: 'Please login now.' })
+          if (err) return res.status(400).json({ message: 'Please login now.' })
 
           const user = await userModel.findOne({ where: { id: result.id } })
           if (!user)
-            return res.status(400).json({ msg: 'This does not exist.' })
+            return res.status(400).json({ message: 'This does not exist.' })
 
           const access_token = createAccessToken({ id: result.id })
 
-          res.status(200).json({
+          return res.status(200).json({
             access_token
           })
         }
       )
     } catch (err) {
-      return res.status(500).json({ msg: err.message })
+      return res.status(500).json({ error: error })
     }
   }
 }
 
-const createActivationToken = (payload) => {
-  return jwt.sign(payload, process.env.ACTIVATION_TOKEN_SECRET)
-}
+// const createActivationToken = (payload) => {
+//   return jwt.sign(payload, process.env.ACTIVATION_TOKEN_SECRET)
+// }
 
 const createAccessToken = (payload) => {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })

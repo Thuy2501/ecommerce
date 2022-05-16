@@ -1,9 +1,8 @@
 const express = require('express')
 const account = express.Router()
-const {validation,auth,authRole} = require('../middleware/index')
+const { validation, auth, authRole } = require('../middleware/index')
 const accountController = require('../modules/user/account.controller')
 const ROLE = require('../contains/role')
-
 
 account.post(
   '/register',
@@ -13,20 +12,37 @@ account.post(
 
 account.get('/verify/:token', accountController.verify)
 
-account.post('/login', validation('validation_register'), accountController.login)
+account.post(
+  '/login',
+  validation('validation_register'),
+  accountController.login
+)
 
 account.post('/refresh-token', auth, accountController.generateAccessToken)
 
-account.post('/change-password', auth, accountController.changePassword)
+account.put(
+  '/change-password',
+  validation('validation_changePassword'),
+  auth,
+  accountController.changePassword
+)
 
-account.post('/reset-password', accountController.resetPassword)
+account.put('/reset-password', accountController.resetPassword)
 
-account.post(
+account.put(
   '/update-admin',
   auth,
-  authRole([ROLE.ADMIN]),
-  validation('validation_updateAdmin'),
-  accountController.updateAdmin
+  validation('validation_updateUser'),
+  accountController.updateAccount
 )
+
+account
+  .route('/')
+  .get(auth, accountController.getAccount)
+  .put(
+    auth,
+    validation('validation_updateUser'),
+    accountController.updateAccount
+  )
 
 module.exports = account

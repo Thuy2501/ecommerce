@@ -26,6 +26,11 @@ const orderModel = sequelizeConnect.define(
     },
     voucher_id: {
       type: DataTypes.INTEGER
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'pending',
+      value: 'true' || 'pending'||'false'
     }
   },
   {

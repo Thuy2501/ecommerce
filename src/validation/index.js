@@ -1,9 +1,13 @@
 const {
-  validation_register,
-  validation_updateUser,
+  
   validation_createUser,
   validation_updateAdmin
 } = require('./validation_user')
+const {
+  validation_register,
+  validation_changePassword,
+  validation_updateUser
+} = require('./validation_account')
 const {
   validation_createProduct,
   validation_updateProduct
@@ -18,6 +22,7 @@ const {
 
 module.exports = {
   validation_register,
+  validation_changePassword,
   validation_updateUser,
   validation_updateAdmin,
   validation_createUser,

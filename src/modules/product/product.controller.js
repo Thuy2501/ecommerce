@@ -1,5 +1,5 @@
 const { productModel, orderDetailsModels, categoryModel } = require('../index')
-const { Op } = require('sequelize')
+const { Op, Sequelize } = require('sequelize')
 const { saveImage } = require('../../helpers/saveImage')
 const { flashsaleItemModel } = require('../flashsaleItems/flashsaleItem.model')
 const { flashsaleModel } = require('../flashsale/flashsale.model')
@@ -7,119 +7,47 @@ const { flashsaleModel } = require('../flashsale/flashsale.model')
 const productController = {
   getProduct: async (req, res) => {
     try {
-      // const {
-      //   limit,
-      //   page,
-      //   name,
-      //   description,
-      //   priceMin,
-      //   priceMax,
-      //   imPriceMin,up
-      //   imPriceMax,
-      //   barcode
-      // } = req.query
+      const {
+        limit,
+        page
+      } = req.query
 
-      // if (
-      //   typeof name == 'undefined' &&
-      //   typeof description == 'undefined' &&
-      //   typeof priceMin == 'undefined' &&
-      //   typeof priceMax == 'undefined' &&
-      //   typeof imPriceMin == 'undefined' &&
-      //   typeof imPriceMax == 'undefined' &&
-      //   typeof barcode == 'undefined'
-      // ) {
-      //   const products = await productModel.findAndCountAll({
-      //     include: {
-      //       model: categoryModel,
-      //       as: 'categorys',
-      //       where: { status: true }
-      //     },
-      //     limit: Number(limit),
-      //     offset: Number(page - 1) * Number(limit),
-      //     order: [['created_at', 'DESC']],
-      //     raw: true
-      //   })
-      //   return res.send(products)
-      // }
-
-      // const products = await productModel.findAndCountAll({
-      //   include: {
-      //     model: categoryModel,
-      //     as: 'categorys',
-      //     where: { status: true }
-      //   },
-      //   where: {
-      //     [Op.or]: [
-      //       {
-      //         name: {
-      //           [Op.substring]: `${name}`
-      //         }
-      //       },
-      //       {
-      //         description: {
-      //           [Op.substring]: `${description}`
-      //         }
-      //       },
-      //       {
-      //         price: {
-      //           [Op.between]: [priceMin, priceMax]
-      //         }
-      //       },
-      //       {
-      //         import_price: {
-      //           [Op.between]: [imPriceMin, imPriceMax]
-      //         }
-      //       },
-      //       {
-      //         barcode: {
-      //           [Op.substring]: `${barcode}`
-      //         }
-      //       }
-      //     ]
-      //   },
-      //   limit: Number(limit),
-      //   offset: Number(page - 1) * Number(limit),
-      //   order: [['created_at', 'DESC']],
-      //   raw: true
-      // })
-
-      const product = await flashsaleItemModel.findAll({
-        attributes: ['id', 'id_product', 'quantity'],
+      const product = await productModel.findAndCountAll({
         include: {
-          model: flashsaleModel,
-          as: flashsaleModel.tableName,
           attributes: ['id'],
-          where: {
-            start_time: {
-              [Op.lt]: new Date()
-            },
-            end_time: {
-              [Op.gt]: new Date()
-            }
+          model: categoryModel,
+          as: 'categorys',
+          where: { status: true }
+        },
+        where: {
+          quantity: {
+            [Op.gt]: 0
           }
         },
+        limit: Number(limit),
+        offset: Number(page - 1) * Number(limit),
+        order: [['created_at', 'DESC']],
         raw: true
       })
-      for (const iterator of product) {
-        const quantity_product = await productModel.findOne({
-          attributes: ['quantity'],
-          where: { id: iterator.id_product },
-          raw: true
-        })
-      
-        const update_quantity_product = await productModel.update(
-          {
-            quantity: iterator.quantity + quantity_product.quantity,
-            status: true
-          },
-          { where: { id: iterator.id_product }}
-        )
+
+      if (product.rows) {
+        for (const item of product.rows) {
+          const flashSaleItem = await flashsaleItemModel.findOne({
+            attributes: ['discount', 'quantity'],
+            where: { id_product: item.id, status: 'pending' }
+          })
+
+          if (flashSaleItem) {
+            item.sell_price =
+              item.price - (flashSaleItem.discount * item.price) / 100
+          }
+        }
       }
 
-      res.send(product)
+      return res.send(product.rows)
     } catch (error) {
       console.log('error', error)
-      res.status(500).json({ error: error })
+      return res.status(500).json({ error: error })
     }
   },
 
@@ -150,7 +78,7 @@ const productController = {
             'quantity',
             [
               Sequelize.literal(
-                '"flashsaleItems->products"."price" - (("flashsaleItems->products"."price" * "flashsaleItems"."discount")/ 100) '
+                '"products"."price" - (("products"."price" * "flashsaleItems"."discount")/ 100) '
               ),
               'sell_price'
             ]

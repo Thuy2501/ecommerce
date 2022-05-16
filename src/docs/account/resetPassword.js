@@ -1,5 +1,5 @@
 module.exports = {
-  post: {
+  put: {
     tags: ['Account'],
     description: 'Reset password user',
     operationId: 'resetPassword',

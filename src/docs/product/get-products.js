@@ -10,7 +10,7 @@ module.exports = {
         schema: {
           type: 'integer',
           minimum: 0,
-          default: 0
+          default: 3
         },
         required: false,
         description: 'The numbers of items to return'
@@ -20,8 +20,8 @@ module.exports = {
         name: 'page',
         schema: {
           type: 'integer',
-          minimum: 0,
-          default: 0
+          minimum: 1,
+          default: 1
         },
         required: false,
         description:

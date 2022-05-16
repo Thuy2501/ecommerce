@@ -20,8 +20,8 @@ const schedulejob = () => {
     }
   })
 
-  //gửi mail
-  cron.schedule('* 15 * * * 1', async (subject, text) => {
+  //gửi mail trước skhi flashsale bắt đầu 15p
+  cron.schedule('* 15 * * * 2', async (subject, text) => {
     try {
       const flashsale_user = await userModel.findAll({
         attributes: ['email'],
@@ -53,11 +53,11 @@ const schedulejob = () => {
     }
   })
 
-  //update status product
+  //update status flashsaleItem
   cron.schedule('* * * * * *', async () => {
     try {
-      const product = await flashsaleItemModel.findAll({
-        attributes: ['id', 'id_product'],
+      const flashsaleItem = await flashsaleItemModel.findAll({
+        attributes: ['id', 'id_product', 'status'],
         include: {
           model: flashsaleModel,
           as: flashsaleModel.tableName,
@@ -73,12 +73,13 @@ const schedulejob = () => {
         },
         raw: true
       })
-      for (const iterator of product) {
-        const update_status_product = await productModel.update(
+
+      for (const iterator of flashsaleItem) {
+        const update_status_flashsaleItem = await flashsaleItemModel.update(
           {
-            status: 'wait'
+            status: 'pending'
           },
-          { where: { id: iterator.id_product, status: false } }
+          { where: { id: iterator.id, status: false } }
         )
       }
     } catch (error) {
@@ -86,11 +87,11 @@ const schedulejob = () => {
     }
   })
 
-  //update status & quantity product
-  cron.schedule('* * * * * *', async (subject, text) => {
+  // update status & quantity product
+  cron.schedule('* * * * * *', async () => {
     try {
-      const product = await flashsaleItemModel.findAll({
-        attributes: ['id', 'id_product', 'quantity'],
+      const flashsale = await flashsaleItemModel.findAll({
+        attributes: ['id', 'id_product', 'quantity', 'status'],
         include: {
           model: flashsaleModel,
           as: flashsaleModel.tableName,
@@ -103,20 +104,28 @@ const schedulejob = () => {
         },
         raw: true
       })
-      for (const iterator of product) {
+
+      for (const iterator of flashsale) {
         const quantity_product = await productModel.findOne({
           attributes: ['quantity'],
           where: { id: iterator.id_product },
           raw: true
         })
 
-        const update_quantity_product = await productModel.update(
-          {
-            quantity: iterator.quantity + quantity_product.quantity,
-            status: 'true'
-          },
-          { where: { id: iterator.id_product, status: 'wait' } }
-        )
+        if (iterator.status == 'pending') {
+          const update_quantity_product = await productModel.update(
+            {
+              quantity: iterator.quantity + quantity_product.quantity
+            },
+            { where: { id: iterator.id_product } }
+          )
+          const update_status_flashsale = await flashsaleItemModel.update(
+            {
+              status: 'true'
+            },
+            { where: { id: iterator.id, status: 'pending' } }
+          )
+        }
       }
     } catch (error) {
       console.log('error update status and quantity product: ', error)
